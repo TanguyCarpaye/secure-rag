@@ -147,26 +147,26 @@ endif::arc42help[]
 |Role/Name|Contact|Expectations
 
 |Chief Information Security Officer (CISO / RSSI)
-|`N/A` (Security Governance)
+|`N/A`
 |Verify compliance with enterprise PSSI and defense/sovereignty requirements. Guarantee zero intellectual property exfiltration. Formally review and approve private network topology (AWS PrivateLink, no IGW/NAT), Customer Managed Keys (AWS KMS CMK), and CloudTrail auditability.
 
 |Architecture Review Board (ARB)
-|`N/A` (Enterprise Architecture)
+|`N/A`
 |Ensure alignment with IT urbanization standards and the AWS Well-Architected Framework (GenAI Lens). Formally evaluate and approve Architecture Decision Records (ADRs), specifically managed serverless building blocks and the vector database trade-off.
 
 |Engineering Units & R&D (Bureaux d'Études)
-|`N/A` (Technical Direction)
+|`N/A`
 |Reliable, highly accurate engineering assistant free of detrimental hallucinations, delivering verified citations from technical documentation (MRO, flight tests, specifications). Low latency (P95 < 4 s) and fast document indexing.
 
 |Platform & SecOps Team
-|`N/A` (Cloud Operations)
+|`N/A`
 |Zero OS administration or cluster maintenance overhead (serverless). Fully reproducible Infrastructure-as-Code deployment (Terraform), strict IAM role separation (least privilege), and real-time CloudWatch telemetry.
 
 |FinOps Lead & IT Financial Management
-|`N/A` (IT Finance)
+|`N/A`
 |Predictability and control of Generative AI costs. Enforcement of granular cost allocation tags, departmental token consumption quotas, and optimized model routing (Haiku vs. Sonnet).
 
 |Data Protection Officer (DPO / Legal)
-|`N/A` (Legal & Compliance)
+|`N/A`
 |Ensure GDPR and EU AI Act compliance, mandatory EU data residency (AWS Paris `eu-west-3`), and auditability of document access. Validate automated PII masking via Bedrock Guardrails.
 |===

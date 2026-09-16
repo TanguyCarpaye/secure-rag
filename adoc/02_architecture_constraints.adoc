@@ -13,25 +13,25 @@ The platform operates under zero-trust and air-gapped network principles, elimin
 |===
 |ID |Constraint |Rationale & Operational Impact
 
-|*TC-1*
-|*Cloud Provider & Fully Managed Serverless Footprint*
-|*AWS Exclusive & Serverless.* The architecture must exclusively leverage AWS native managed services (Amazon Bedrock, Amazon OpenSearch Serverless or Aurora PostgreSQL Serverless pgvector, AWS Lambda, S3). Provisioning and maintaining self-hosted virtual machines (Amazon EC2) or Kubernetes nodes (Amazon EKS) is strictly forbidden to eliminate OS patching, host maintenance, and operational toil.
+|TC-1
+|Cloud Provider & Fully Managed Serverless Footprint
+|AWS Exclusive & Serverless. The architecture must exclusively leverage AWS native managed services (Amazon Bedrock, Amazon OpenSearch Serverless or Aurora PostgreSQL Serverless pgvector, AWS Lambda, S3). Provisioning and maintaining self-hosted virtual machines (Amazon EC2) or Kubernetes nodes (Amazon EKS) is strictly forbidden to eliminate OS patching, host maintenance, and operational toil.
 
-|*TC-2*
-|*Zero Public Internet Transit (Air-Gapped Network)*
-|*No Internet Gateway (IGW) or NAT Gateway.* All data ingestion, vector indexing, retrieval, and inference traffic must reside entirely within private isolated subnets. Connectivity to AWS services must route exclusively through *AWS PrivateLink (VPC Interface Endpoints)* and *S3 Gateway Endpoints*. Public IP assignment is prohibited on any interface.
+|TC-2
+|Zero Public Internet Transit (Air-Gapped Network)
+|No Internet Gateway (IGW) or NAT Gateway. All data ingestion, vector indexing, retrieval, and inference traffic must reside entirely within private isolated subnets. Connectivity to AWS services must route exclusively through AWS PrivateLink (VPC Interface Endpoints) and S3 Gateway Endpoints. Public IP assignment is prohibited on any interface.
 
-|*TC-3*
-|*Cryptographic Sovereignty & Customer Managed Keys (CMK)*
-|*Mandatory AWS KMS CMK.* All data at rest and data in transit must be encrypted using dedicated Customer Managed Keys. Default AWS-managed keys are prohibited by enterprise CISO policy. Key policies must strictly enforce annual rotation.
+|TC-3
+|Cryptographic Sovereignty & Customer Managed Keys (CMK)
+|Mandatory AWS KMS CMK. All data at rest and data in transit must be encrypted using dedicated Customer Managed Keys. Default AWS-managed keys are prohibited by enterprise CISO policy. Key policies must strictly enforce annual rotation.
 
-|*TC-4*
-|*Zero Custom Application Code ("Infrastructure-First")*
-|*No bespoke application backend.* The design eliminates custom Python/FastAPI middleware runtimes. The platform relies exclusively on native orchestration capabilities to minimize attack surface and application lifecycle maintenance.
+|TC-4
+|Zero Custom Application Code ("Infrastructure-First")
+|No bespoke application backend. The design eliminates custom Python/FastAPI middleware runtimes. The platform relies exclusively on native orchestration capabilities to minimize attack surface and application lifecycle maintenance.
 
-|*TC-5*
-|*Strict Geographic Data Residency*
-|*EU Territory Exclusivity.* Primary infrastructure, vector storage, and model execution must be strictly provisioned within the AWS European boundaries (Primary: `eu-west-3` Paris).
+|TC-5
+|Strict Geographic Data Residency
+|EU Territory Exclusivity. Primary infrastructure, vector storage, and model execution must be strictly provisioned within the AWS European boundaries (Primary: `eu-west-3` Paris).
 |===
 
 === Organizational and Regulatory Constraints
@@ -42,24 +42,24 @@ These constraints mandate strict document-level access controls during retrieval
 |===
 |ID |Constraint |Rationale & Operational Impact
 
-|*OC-1*
-|*Sovereignty, Data Residency & Model Training Prohibition*
-|*Zero Data Retention & Cloud Act Mitigation.* Technical controls and contractual terms with model and hosting providers must guarantee zero data retention (ZDR) beyond the ephemeral inference window. Prompts, embeddings, and retrieved context must never be logged on unmanaged infrastructure or utilized for base model training. For sensitive engineering payloads (IP/Trade Secrets), inference must run on-premises, within SecNumCloud-certified enclaves, or via dedicated KMS with customer-held keys preventing extraterritorial administrative access.
+|OC-1
+|Sovereignty, Data Residency & Model Training Prohibition
+|Zero Data Retention & Cloud Act Mitigation. Technical controls and contractual terms with model and hosting providers must guarantee zero data retention (ZDR) beyond the ephemeral inference window. Prompts, embeddings, and retrieved context must never be logged on unmanaged infrastructure or utilized for base model training. For sensitive engineering payloads (IP/Trade Secrets), inference must run on-premises, within SecNumCloud-certified enclaves, or via dedicated KMS with customer-held keys preventing extraterritorial administrative access.
 
-|*OC-2*
-|*Compliance Framework (EU AI Act, Export Control & Defense)*
-|*Multi-Tier Regulatory Governance.* The system must enforce strict boundaries according to data sensitivity.
+|OC-2
+|Compliance Framework (EU AI Act, Export Control & Defense)
+|Multi-Tier Regulatory Governance. The system must enforce strict boundaries according to data sensitivity.
 
-|*OC-3*
-|*End-to-End IAM & Metadata-Driven Retrieval (ABAC)*
-|*Dual-Control IAM & Document-Level Security.* Least privilege is enforced at both infrastructure and data layers:
-* *Infrastructure Separation:* Strict division between Cloud/Infra Admins, KMS Key Custodians, and Service Workloads.
-* *Vector-Level ABAC:* Vector database searches must apply pre-retrieval security filters matching the querying user's authorization tags.
+|OC-3
+|End-to-End IAM & Metadata-Driven Retrieval (ABAC)
+|Dual-Control IAM & Document-Level Security. Least privilege is enforced at both infrastructure and data layers:
+ Infrastructure Separation: Strict division between Cloud/Infra Admins, KMS Key Custodians, and Service Workloads.
+ Vector-Level ABAC: Vector database searches must apply pre-retrieval security filters matching the querying user's authorization tags.
 
-|*OC-4*
-|*Configuration Management & Auditability Gateways*
-|*Document Lifecycle & Versioning:* Retrieval pipelines must enforce metadata filtering on document revisions, valid engineering effectivities, and obsolescence status.
-*Architecture Sign-Off:* Formal alignment with the *AWS Well-Architected Framework*.
+|OC-4
+|Configuration Management & Auditability Gateways
+|Document Lifecycle & Versioning: Retrieval pipelines must enforce metadata filtering on document revisions, valid engineering effectivities, and obsolescence status.
+Architecture Sign-Off: Formal alignment with the AWS Well-Architected Framework.
 |===
 
 === Conventions and Standards
@@ -70,16 +70,16 @@ To ensure reusability, maintainability, and alignment with corporate engineering
 |===
 |ID |Convention |Specification & Tooling
 
-|*CON-1*
-|*Infrastructure as Code (IaC) & DevSecOps Validation*
-|All infrastructure components must be declared using *HashiCorp Terraform* (version >= 1.8). Every module must pass static security analysis, linting, and formatting standards before deployment through automated CI/CD validation pipelines.
+|CON-1
+|Infrastructure as Code (IaC) & DevSecOps Validation
+|All infrastructure components must be declared using HashiCorp Terraform (version >= 1.8). Every module must pass static security analysis, linting, and formatting standards before deployment through automated CI/CD validation pipelines.
 
-|*CON-2*
-|*FinOps Tagging & Cost Allocation Standard*
+|CON-2
+|FinOps Tagging & Cost Allocation Standard
 |Every provisioned resource must include mandatory AWS Cost Allocation Tags:
-* `Project` = `XXX`
-* `Environment` = `xxx`
-* `DataClassification` = `xxx`
-* `CostCenter` = `xxx`
+ `Project` = `XXX`
+ `Environment` = `xxx`
+ `DataClassification` = `xxx`
+ `CostCenter` = `xxx`
 Un-tagged resources must be automatically flagged or quarantined.
 |===

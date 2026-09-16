@@ -77,9 +77,9 @@ To ensure reusability, maintainability, and alignment with corporate engineering
 |CON-2
 |FinOps Tagging & Cost Allocation Standard
 |Every provisioned resource must include mandatory AWS Cost Allocation Tags:
- `Project` = `XXX`
- `Environment` = `xxx`
- `DataClassification` = `xxx`
- `CostCenter` = `xxx`
+ `Project` = `XXX`,
+ `Environment` = `xxx`,
+ `DataClassification` = `xxx`,
+ `CostCenter` = `xxx`.
 Un-tagged resources must be automatically flagged or quarantined.
 |===

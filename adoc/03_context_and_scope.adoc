@@ -7,5 +7,66 @@ ifndef::imagesdir[:imagesdir: ../images]
 === Business Context
 image::03_1_business_context.drawio.png[Business Context]
 
+.Business Context Interfaces Specification
+[cols="22%,26%,26%,26%",options="header"]
+|===
+|Communication Partner |Inputs (to RAG Platform) |Outputs (from RAG Platform) |Business Purpose
+
+|*Users*
+|Technical questions, search queries
+|Verified domain answers, source references
+|Assists knowledge workers in retrieving validated engineering intelligence.
+
+|*Enterprise Identity Provider*
+|User attributes, contextual authorization claims
+|Validation requests
+|Enforces attribute-based access control (ABAC) to restrict document access.
+
+|*Document Repositories*
+|Raw engineering files, schematics, technical documentation
+|Ingestion status receipts, processing status
+|Feeds proprietary knowledge assets into the indexing pipeline.
+
+|*Model Provider*
+|Synthesized text generation, token completions
+|Ephemeral prompts enriched with context
+|Provides foundational language generation without persistent enterprise data retention.
+
+|*SecOps and Compliance Systems*
+|_None_
+|Security audit trails, query access logs, compliance telemetry
+|Enables regulatory traceability, threat detection, and algorithmic governance.
+|===
+
 === Technical Context
 image::03_2_technical_context.drawio.png[Technical Context]
+
+.Technical Interfaces Specification
+[cols="18%,22%,24%,16%,20%",options="header"]
+|===
+|Interface / Channel |Source -> Target |Protocol & Security |Data Format |Isolation Mechanism
+
+|*Corporate Access*
+|User Workstation -> VGW
+|HTTPS (TLS 1.3), TCP 443 over 802.1Q VLAN (BGP)
+|REST / JSON
+|Dedicated private fiber (AWS Direct Connect); zero public Internet routability.
+
+|*GenAI & Vector Search*
+|Compute -> Bedrock & OpenSearch Serverless
+|HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via PrivateLink
+|JSON (Prompts, Embeddings, Query Results)
+|VPC Interface Endpoints (local ENIs); traffic remains on AWS private backbone.
+
+|*Document Retrieval*
+|Compute -> S3
+|HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via Gateway Endpoint
+|Binary Stream & JSON/XML
+|VPC Route Table prefix list redirection; internal routing without NAT/IGW.
+
+|*Security & Observability*
+|Compute -> KMS, CloudWatch, CloudTrail
+|HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via PrivateLink
+|JSON (Ciphertext, Metrics, Audit Logs)
+|Dedicated Interface Endpoints per service; strictly scoped by private Security Groups.
+|===

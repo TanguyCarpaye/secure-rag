@@ -31,7 +31,7 @@ The architectural challenge lies not in software application development, but in
 ==== Target Functional Capabilities
 . Asynchronous ingestion and vectorization : Extraction, chunking, and generation of semantic embeddings for office and technical documents (PDF, Word, Markdown, vectorized diagrams) stored in highly secure environments.
 . Hybrid similarity search : Low-latency indexing and contextual retrieval of relevant document passages via a managed vector database.
-. Context-aware response generation: Inference using leading Large Language Models such as Gemini 3.5 flash via Amazon Bedrock—powered exclusively by the extracted document context.
+. Context-aware response generation: Inference using leading Large Language Models such as Gemini 3.5 flash via Amazon Bedrock powered exclusively by the extracted document context.
 . Contextual filtering and automated guardrails: Proactive detection and blocking of prompt injections and jailbreaks, automatic masking of personally identifiable information (PII), and prevention of output outside the approved document domain via Bedrock Guardrails.
 
 

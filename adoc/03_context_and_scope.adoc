@@ -5,5 +5,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 
 === Business Context
+image::03_1_business_context.drawio.png[Business Context]
 
 === Technical Context
+image::03_2_technical_context.drawio.png[Technical Context]

@@ -1,0 +1,44 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-solution-strategy]]
+== Solution Strategy
+
+=== 1. Technology Decisions
+
+* **Managed RAG Pattern:** We utilize a Retrieval-Augmented Generation architecture to restrict LLM outputs to approved technical baselines, mitigating hallucinations and out-of-domain answers.
+* **Serverless Cognitive Engine:** To avoid the operational overhead of provisioning and patching GPU instances, inference is offloaded to Amazon Bedrock. This provides managed access to foundation models (Gemini 3.5 flash for reasoning, Amazon Titan for embeddings).
+* **Serverless Vector Store:** Semantic indexing and similarity search are handled by Amazon OpenSearch Serverless (or Aurora PostgreSQL pgvector), removing cluster capacity management.
+
+=== 2. Security and Isolation Strategy
+
+* **Air-Gapped VPC:** The system is deployed within a Virtual Private Cloud containing zero Internet Gateways (IGW) or NAT Gateways.
+* **Private Connectivity:** All communication with AWS APIs routes exclusively through VPC Interface Endpoints (AWS PrivateLink). Object storage traffic is routed internally via an S3 Gateway Endpoint.
+* **Cryptographic Segregation:** Data is encrypted at rest and in transit using AWS KMS Customer Managed Keys (CMK). A strict separation of duties ensures that infrastructure administrators cannot decrypt payloads, and security custodians do not manage infrastructure.
+* **In-Flight Content Filtering:** Amazon Bedrock Guardrails are configured to intercept prompt injections and mask Personally Identifiable Information (PII) synchronously.
+
+=== 3. Quality Goals Mapping
+
+[cols="1,2,4", options="header"]
+|===
+| ID | Quality Goal | Solution Approach
+
+| *QG-1* 
+| Data Isolation & IP Protection
+| Zero Data Retention contracts ensure prompts are not used for model training. KMS CMK enforces cryptographic sovereignty over all data.
+
+| *QG-2* 
+| Total Network Isolation
+| Complete removal of internet egress routes. Strict reliance on AWS PrivateLink and S3 Gateway Endpoints to confine API traffic within the private backbone.
+
+| *QG-3* 
+| Safety & Hallucination Mitigation
+| Bedrock Guardrails provide deterministic PII redaction and injection blocking. The RAG pattern binds answers strictly to retrieved enterprise context.
+
+| *QG-4* 
+| Operational Simplicity
+| Rejection of custom compute (EC2/EKS). Exclusive use of serverless primitives (Bedrock, OpenSearch Serverless) managed via Terraform.
+
+| *QG-5* 
+| FinOps Governance
+| Serverless pricing prevents idle compute costs. AWS Cost Allocation Tags are enforced via IaC to track token consumption by engineering business unit.
+|===

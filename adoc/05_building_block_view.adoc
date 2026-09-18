@@ -1,0 +1,93 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-building-block-view]]
+== Building Block View
+
+ifdef::arc42help[]
+[role="arc42help"]
+****
+The building block view breaks down the system into black boxes and white boxes, showing their internal structure and relationships.
+* Level 1: Whitebox of the overall system (Core subsystems).
+* Level 2: Whitebox of critical subsystems (Ingestion Pipeline & Inference Pipeline).
+****
+endif::arc42help[]
+
+This section details the internal decomposition of the Secure Enterprise RAG Platform into discrete building blocks, separating asynchronous data ingestion from synchronous query-time inference.
+
+=== 1. Level 1: Whitebox Overall System
+
+The platform is structured into four primary subsystems communicating exclusively through private, managed channels within the isolated VPC.
+
+image::05_01_building_block_view.drawio.png[Building Block View]
+
+[cols="1,3", options="header"]
+|===
+|Building Block |Description & Responsibility
+
+|*1. Ingestion & Vectorization Pipeline*
+|Asynchronously processes raw engineering documents from staging storage, executes text extraction, semantic chunking, and generates high-dimensional embeddings before indexing them into the vector store.
+
+|*2. Vector & Knowledge Store*
+|Maintains high-performance vector indices (Amazon OpenSearch Serverless) and master document binaries (S3), enforcing strict metadata boundaries and encryption at rest via KMS CMK.
+
+|*3. Query & RAG Inference Pipeline*
+|Handles synchronous user requests, coordinates hybrid search queries against the vector store, constructs augmented prompt contexts, and invokes the foundation model (Gemini 3.5 Flash).
+
+|*4. Security & Governance Plane*
+|Enforces runtime content filtering (Bedrock Guardrails), cryptographic data protection (KMS CMK), and identity-based access control (ABAC) across all subsystems.
+|===
+
+=== 2. Level 2: Query & RAG Inference Pipeline (Whitebox)
+
+The inference pipeline handles user queries in real-time. It enforces strict safety checks both before context retrieval and after model generation to prevent prompt injections and data leakage.
+
+image::05_02_building_block_view.drawio.png[Building Block View]
+
+[cols="1,3", options="header"]
+|===
+|Component |Operational Logic & Security Controls
+
+|*Private API Gateway*
+|Terminates TLS 1.3 traffic arriving via the internal network and authenticates session tokens (IAM/SigV4). No public internet exposure.
+
+|*Security Guardrails (Input)*
+|Inspects raw user prompts for jailbreaks or prompt injections and deterministically masks sensitive PII before any database lookup.
+
+|*Vector Retriever*
+|Executes pre-filtered semantic and lexical searches against OpenSearch Serverless, applying ABAC filters matching the user's security clearance.
+
+|*Context Assembler*
+|Merges retrieved engineering snippets with system instructions, managing context window limits and formatting the final prompt payload.
+
+|*Cognitive Engine (Gemini 3.5 Flash)*
+|Generates grounded text responses with precise source citations. Selected for optimal cost-to-performance ratio (FinOps) and fast Time-To-First-Token (TTFT), routed via a secure private connection enforcing Zero Data Retention (ZDR).
+
+|*Security Guardrails (Output)*
+|Scans the generated text to ensure it does not hallucinate out-of-domain knowledge or leak unverified claims before returning the payload to the user.
+|===
+
+=== 3. Level 2: Ingestion & Vectorization Pipeline (Whitebox)
+
+The ingestion pipeline is entirely decoupled from user traffic. It operates as a batch or event-driven process, transforming unstructured technical documentation into structured semantic vectors.
+
+image::05_03_building_block_view.drawio.png[Building Block View]
+
+[cols="1,3", options="header"]
+|===
+|Component |Operational Logic & Security Controls
+
+|*S3 Staging Storage*
+|Encrypted object storage holding raw engineering documents pushed from corporate PLM/EDMS systems. Accessed strictly via S3 Gateway Endpoints.
+
+|*Document Parser & Chunker*
+|Extracts text, tables, and metadata. Divides content into optimized semantic chunks (e.g., overlapping windows of 512 tokens) to preserve technical context.
+
+|*Embedding Model*
+|Transforms text chunks into high-dimensional vector embeddings. Computation is executed internally without persisting the raw text on model provider servers.
+
+|*OpenSearch Indexer*
+|Writes the resulting embeddings and associated metadata tags (document ID, revision, classification) into the vector database.
+
+|*Amazon OpenSearch Serverless*
+|Stores immutable vector embeddings. Indices are encrypted at rest using KMS CMK and isolated via VPC endpoint security groups.
+|===

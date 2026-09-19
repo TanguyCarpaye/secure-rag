@@ -28,3 +28,29 @@ image::06_01_runtime_view.drawio.png[Runtime View]
 | *8-10* 
 | The generated response is intercepted by the output Guardrails to verify it remains within the authorized technical domain and does not leak unverified claims. The final validated answer, along with its source citations, is returned to the user.
 |===
+
+=== 2. Asynchronous Document Ingestion (Knowledge Vectorization)
+
+This scenario describes the background process triggered when new technical documentation is published by the enterprise. The sequence focuses on secure data transformation, embedding generation, and cryptographic sealing at rest.
+
+image::06_02_runtime_view.drawio.png[Runtime View]
+
+[cols="1,4", options="header"]
+|===
+| Step | Runtime Operation & Security Enforcement
+
+| *1-2* 
+| Authoritative engineering files are pushed from the corporate PLM to a secure staging S3 bucket. The transfer routes internally through an **S3 Gateway Endpoint** attached to the VPC route table, completely avoiding public routing.
+
+| *3* 
+| An event trigger awakens the Document Parser. The parser extracts raw text, tables, and structure, splitting the content into semantic chunks to preserve technical context without exceeding embedding limits.
+
+| *4-5* 
+| The parser invokes the embedding model (Amazon Titan via Bedrock) to convert text chunks into vector arrays. This API call traverses the AWS backbone via an Interface Endpoint (PrivateLink).
+
+| *6-7* 
+| Before writing to the vector database, the Indexer communicates with **AWS Key Management Service (KMS)**. It uses a Customer Managed Key (CMK) to perform envelope encryption, satisfying the enterprise requirement for cryptographic sovereignty.
+
+| *8-9* 
+| The encrypted vectors and their associated authorization metadata tags (required for future ABAC filtering) are persisted in **Amazon OpenSearch Serverless**. The indexer logs a successful ingestion receipt to CloudWatch for auditability.
+|===

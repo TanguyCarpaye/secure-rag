@@ -6,7 +6,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 === 1. Technology Decisions
 
 * **Managed RAG Pattern:** We utilize a Retrieval-Augmented Generation architecture to restrict LLM outputs to approved technical baselines, mitigating hallucinations and out-of-domain answers.
-* **Serverless Cognitive Engine:** To avoid the operational overhead of provisioning and patching GPU instances, inference is offloaded to Amazon Bedrock. This provides managed access to foundation models (Gemini 3.5 flash for reasoning, Amazon Titan for embeddings).
+* **Serverless Cognitive Engine:** To avoid the operational overhead of provisioning and patching GPU instances, inference is offloaded to Amazon Bedrock. This provides managed access to foundation models (Mistral Large 3 for reasoning, Amazon Titan for embeddings).
 * **Serverless Vector Store:** Semantic indexing and similarity search are handled by Amazon OpenSearch Serverless (or Aurora PostgreSQL pgvector), removing cluster capacity management.
 
 === 2. Security and Isolation Strategy

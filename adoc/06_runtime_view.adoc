@@ -23,7 +23,7 @@ image::06_01_runtime_view.drawio.png[Runtime View]
 | The Vector Retriever queries **Amazon OpenSearch Serverless**. The query payload includes the user's ABAC tokens, ensuring the vector database only returns chunks from documents the user is explicitly authorized to view. All transit occurs over AWS PrivateLink (no IGW).
 
 | *6-7* 
-| The Context Assembler merges the retrieved engineering snippets with the sanitized prompt. This payload is sent to the cognitive engine (**Gemini 3.5 Flash via Amazon Bedrock**). The payload executes under a strict Zero Data Retention (ZDR) policy, guaranteeing prompts are not logged or used for model training.
+| The Context Assembler merges the retrieved engineering snippets with the sanitized prompt. This payload is sent to the cognitive engine (**Mistral Large 3 via Amazon Bedrock**). The payload executes under a strict Zero Data Retention (ZDR) policy, guaranteeing prompts are not logged or used for model training.
 
 | *8-10* 
 | The generated response is intercepted by the output Guardrails to verify it remains within the authorized technical domain and does not leak unverified claims. The final validated answer, along with its source citations, is returned to the user.

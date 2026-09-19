@@ -31,7 +31,7 @@ image::05_01_building_block_view.drawio.png[Building Block View]
 |Maintains high-performance vector indices (Amazon OpenSearch Serverless) and master document binaries (S3), enforcing strict metadata boundaries and encryption at rest via KMS CMK.
 
 |*3. Query & RAG Inference Pipeline*
-|Handles synchronous user requests, coordinates hybrid search queries against the vector store, constructs augmented prompt contexts, and invokes the foundation model (Gemini 3.5 Flash).
+|Handles synchronous user requests, coordinates hybrid search queries against the vector store, constructs augmented prompt contexts, and invokes the foundation model (Mistral Large 3).
 
 |*4. Security & Governance Plane*
 |Enforces runtime content filtering (Bedrock Guardrails), cryptographic data protection (KMS CMK), and identity-based access control (ABAC) across all subsystems.
@@ -59,7 +59,7 @@ image::05_02_building_block_view.drawio.png[Building Block View]
 |*Context Assembler*
 |Merges retrieved engineering snippets with system instructions, managing context window limits and formatting the final prompt payload.
 
-|*Cognitive Engine (Gemini 3.5 Flash)*
+|*Cognitive Engine (Mistral Large 3)*
 |Generates grounded text responses with precise source citations. Selected for optimal cost-to-performance ratio (FinOps) and fast Time-To-First-Token (TTFT), routed via a secure private connection enforcing Zero Data Retention (ZDR).
 
 |*Security Guardrails (Output)*

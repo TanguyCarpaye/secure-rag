@@ -1,0 +1,51 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-crosscutting-concepts]]
+== Crosscutting Concepts
+
+This section outlines the crosscutting concepts applied across the Secure Enterprise RAG Platform. These mechanisms ensure consistency in security, data protection, and observability while adhering to the constraints defined in Section 2.
+
+=== 1. Identity and Attribute-Based Access Control (ABAC)
+
+To satisfy OC-3 (End-to-End IAM and Metadata-Driven Retrieval), the architecture implements Attribute-Based Access Control (ABAC) instead of traditional Role-Based Access Control (RBAC). In a classified engineering context, mapping a specific role to every document combination is unmaintainable. Instead, access rights are evaluated dynamically at the vector database level based on user identity tags.
+
+image::08_01_concepts.drawio.png[Runtime View]
+
+**Implementation Principle:**
+1. Metadata Tagging: During the asynchronous ingestion phase, document chunks are indexed in OpenSearch Serverless with attached metadata arrays (e.g., Program, ClearanceLevel, Department).
+2. Pre-Retrieval Filtering: When a query is submitted, the API extracts SAML/JWT claims from the Enterprise Identity Provider. These claims form strict boolean filters applied before the k-NN vector search executes. 
+3. Data Leakage Prevention: This ensures the LLM never receives document chunks the user is not explicitly cleared to read, preventing cross-tenant data leakage via prompt manipulation.
+
+=== 2. Cryptographic Sovereignty and Envelope Encryption
+
+To fulfill TC-3 (Cryptographic Sovereignty and CMK), Envelope Encryption is enforced for all persistent data (S3 and OpenSearch) and transit channels, mitigating the risk of unauthorized administrative access.
+
+image::08_02_concepts.drawio.png[Runtime View]
+
+**Implementation Principle:**
+* **Key Segregation:** The Customer Managed Key (CMK) never leaves the AWS KMS hardware security modules. The infrastructure team provisions resources, but only the SecOps team holds kms:PutKeyPolicy and kms:ScheduleKeyDeletion permissions.
+* **Envelope Process:** When writing vector chunks, the system requests a Data Encryption Key (DEK) from KMS. KMS returns the DEK in both plaintext and encrypted forms. The system encrypts the vector locally using the plaintext DEK, discards the plaintext DEK, and persists the encrypted payload alongside the encrypted DEK. 
+* **Zero Trust:** Even if physical storage volumes underlying OpenSearch or S3 are accessed, the data remains cryptographically unreadable without the active KMS IAM role.
+
+=== 3. AI Safety & Content Filtering (Bedrock Guardrails)
+
+Addressing QG-3 (Safety & Hallucination Mitigation), AI safety is managed via an infrastructure-level gateway rather than custom prompt engineering.
+
+* **Synchronous Interception:** Amazon Bedrock Guardrails intercept both inbound user prompts and outbound LLM completions.
+* **PII Masking:** Personally Identifiable Information (e.g., names, phone numbers, email addresses) is detected using predefined patterns and masked (e.g., [NAME]) before vector search or inference, keeping query telemetry clean.
+* **Injection Blocking:** Filters detect and drop prompt injection attempts (e.g., "Ignore all previous instructions") before they reach the Foundation Model.
+
+=== 4. Total Observability & Auditability
+
+To comply with OC-4 (Auditability Gateways), logging and monitoring follow strict network routing policies.
+
+* **Immutable Telemetry:** Inference metrics, prompt logs, and guardrail interventions stream directly to Amazon CloudWatch and AWS CloudTrail.
+* **Air-Gapped Telemetry Transit:** Metrics do not traverse the public internet. They route via dedicated com.amazonaws.eu-west-3.logs VPC Interface Endpoints.
+* **Non-Repudiation:** Log streams are encrypted via a dedicated KMS CMK and configured with Object Lock (WORM - Write Once, Read Many) if exported to S3 for SIEM ingestion, preventing tampering by system administrators.
+
+=== 5. FinOps and Cost Governance
+
+To satisfy QG-5 (FinOps Governance) and CON-2 (FinOps Tagging), the platform tracks generative AI token expenses at the infrastructure level.
+
+* **Mandatory Resource Tagging:** The Terraform CI/CD pipeline enforces CostCenter and Project tags on all AWS resources. Untagged deployments are automatically rejected via static analysis tools (e.g., Checkov/TFLint).
+* **Token Tracking:** The CostCenter tag is passed within bedrock:InvokeModel request headers. This enables IT Financial Management to generate billing reports detailing embedding and inference costs per engineering department.

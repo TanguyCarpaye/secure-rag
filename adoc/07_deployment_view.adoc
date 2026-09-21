@@ -23,11 +23,11 @@ The logical building blocks map to the following physical execution environments
 
 | **Compute Engine**
 | AWS Fargate
-| Deployed exclusively across **App Private Subnets** in multiple Availability Zones to prevent a Single Point of Failure (SPOF). No public IP addresses are assigned. Ephemeral serverless execution eliminates host patching and persistent attack surfaces.
+| Deployed exclusively across App Private Subnets in multiple Availability Zones to prevent a Single Point of Failure (SPOF). No public IP addresses are assigned. Ephemeral serverless execution eliminates host patching and persistent attack surfaces.
 
 | **API Endpoints**
 | AWS PrivateLink (Interface Endpoints)
-| Deployed in dedicated **Endpoints Private Subnets**. These inject Elastic Network Interfaces (ENIs) with private IP addresses into the VPC, securely bridging the compute layer to Amazon Bedrock (Mistral Large 3), OpenSearch, and KMS without requiring NAT Gateways.
+| Deployed in dedicated Endpoints Private Subnets. These inject Elastic Network Interfaces (ENIs) with private IP addresses into the VPC, securely bridging the compute layer to Amazon Bedrock (Mistral Large 3), OpenSearch, and KMS without requiring NAT Gateways.
 
 | **Storage Routing**
 | Amazon S3 Gateway Endpoint

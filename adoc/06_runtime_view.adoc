@@ -11,7 +11,7 @@ image::06_01_runtime_view.drawio.png[Runtime View]
 
 [cols="1,4", options="header"]
 |===
-| Step | Runtime Operation & Security Enforcement
+| Step | Runtime Operation and Security Enforcement
 
 | *1* 
 | The user submits a natural language query over the corporate WAN via a dedicated AWS Direct Connect link. Traffic is terminated at the Private API Gateway using TLS 1.3.
@@ -37,7 +37,7 @@ image::06_02_runtime_view.drawio.png[Runtime View]
 
 [cols="1,4", options="header"]
 |===
-| Step | Runtime Operation & Security Enforcement
+| Step | Runtime Operation and Security Enforcement
 
 | *1-2* 
 | Authoritative engineering files are pushed from the corporate PLM to a secure staging S3 bucket. The transfer routes internally through an **S3 Gateway Endpoint** attached to the VPC route table, completely avoiding public routing.

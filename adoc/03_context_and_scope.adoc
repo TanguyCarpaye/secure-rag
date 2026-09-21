@@ -44,7 +44,7 @@ image::03_2_technical_context.drawio.png[Technical Context]
 .Technical Interfaces Specification
 [cols="18%,22%,24%,16%,20%",options="header"]
 |===
-|Interface / Channel |Source -> Target |Protocol & Security |Data Format |Isolation Mechanism
+|Interface / Channel |Source -> Target |Protocol and Security |Data Format |Isolation Mechanism
 
 |*Corporate Access*
 |User Workstation -> VGW
@@ -52,8 +52,8 @@ image::03_2_technical_context.drawio.png[Technical Context]
 |REST / JSON
 |Dedicated private fiber (AWS Direct Connect); zero public Internet routability.
 
-|*GenAI & Vector Search*
-|Compute -> Bedrock & OpenSearch Serverless
+|*GenAI and Vector Search*
+|Compute -> Bedrock and OpenSearch Serverless
 |HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via PrivateLink
 |JSON (Prompts, Embeddings, Query Results)
 |VPC Interface Endpoints (local ENIs); traffic remains on AWS private backbone.
@@ -61,10 +61,10 @@ image::03_2_technical_context.drawio.png[Technical Context]
 |*Document Retrieval*
 |Compute -> S3
 |HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via Gateway Endpoint
-|Binary Stream & JSON/XML
+|Binary Stream and JSON/XML
 |VPC Route Table prefix list redirection; internal routing without NAT/IGW.
 
-|*Security & Observability*
+|*Security and Observability*
 |Compute -> KMS, CloudWatch, CloudTrail
 |HTTPS (TLS 1.2+), AWS SigV4, TCP 443 via PrivateLink
 |JSON (Ciphertext, Metrics, Audit Logs)

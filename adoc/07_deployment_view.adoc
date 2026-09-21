@@ -1,0 +1,50 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-deployment-view]]
+== Deployment View
+
+=== 1. Infrastructure Level 1: Regional Network Topology
+
+The overall system is deployed within a single, highly isolated Virtual Private Cloud (VPC) spanning multiple Availability Zones (AZ) to ensure high availability without compromising the closed network perimeter. The separation of subnets enforces a strict boundary between the compute layer and the AWS API entry points.
+
+image::07_01_deployment_view.drawio.png[Runtime View]
+
+==== Deployment Nodes and Infrastructure Mapping
+
+The logical building blocks map to the following physical execution environments:
+
+[cols="20%,30%,50%", options="header"]
+|===
+| Component | AWS Resource | Deployment and Isolation Rationale
+
+| **Corporate Access**
+| AWS Direct Connect + VGW
+| Provides a dedicated, private physical fiber connection from the enterprise datacenter directly to the VPC. Traffic bypasses the public internet entirely.
+
+| **Compute Engine**
+| AWS Fargate
+| Deployed exclusively across **App Private Subnets** in multiple Availability Zones to prevent a Single Point of Failure (SPOF). No public IP addresses are assigned. Ephemeral serverless execution eliminates host patching and persistent attack surfaces.
+
+| **API Endpoints**
+| AWS PrivateLink (Interface Endpoints)
+| Deployed in dedicated **Endpoints Private Subnets**. These inject Elastic Network Interfaces (ENIs) with private IP addresses into the VPC, securely bridging the compute layer to Amazon Bedrock (Mistral Large 3), OpenSearch, and KMS without requiring NAT Gateways.
+
+| **Storage Routing**
+| Amazon S3 Gateway Endpoint
+| Attached at the VPC Route Table level. Routes heavy document retrieval traffic internally via the AWS SDN instead of PrivateLink, maintaining air-gapped isolation without incurring data transfer processing costs.
+|===
+
+=== 2. Infrastructure Level 2: Security Groups and Segregation
+
+To enforce a Zero-Trust architecture within the VPC, the deployment utilizes strict Security Group (SG) chaining. This ensures that even if the compute layer is compromised, lateral movement to the AWS APIs is cryptographically and logically restricted at the network interface level.
+
+image::07_02_deployment_view.drawio.png[Runtime View]
+
+==== Security and IAM Constraints applied at Deployment
+
+* **Subnet Segregation:** The compute workloads are physically isolated from the VPC Endpoints. This multi-tier architecture prevents IP exhaustion and allows for precise Network Access Control List (NACL) tuning.
+* **Security Group Chaining:** 
+  ** The AppSG accepts inbound HTTPS traffic strictly from the corporate VGW IP ranges.
+  ** The EndpointSG accepts inbound HTTPS traffic only from the AppSG. It explicitly drops all other internal VPC traffic, securing the Interface Endpoints from unauthorized lateral access.
+* **VPC Endpoint Policies (VPCe):** Each PrivateLink interface is locked down using IAM Resource Policies.
+* **Cryptographic Segregation:** The KMS Interface Endpoint ensures that envelope encryption operations never traverse untrusted networks. Strict IAM role segregation prevents the infrastructure deployment pipeline from accessing the decryption keys.

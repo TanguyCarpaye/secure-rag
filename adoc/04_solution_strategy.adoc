@@ -23,7 +23,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 | ID | Quality Goal | Solution Approach
 
 | *QG-1* 
-| Data Isolation & IP Protection
+| Data Isolation and IP Protection
 | Zero Data Retention contracts ensure prompts are not used for model training. KMS CMK enforces cryptographic sovereignty over all data.
 
 | *QG-2* 
@@ -31,7 +31,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 | Complete removal of internet egress routes. Strict reliance on AWS PrivateLink and S3 Gateway Endpoints to confine API traffic within the private backbone.
 
 | *QG-3* 
-| Safety & Hallucination Mitigation
+| Safety and Hallucination Mitigation
 | Bedrock Guardrails provide deterministic PII redaction and injection blocking. The RAG pattern binds answers strictly to retrieved enterprise context.
 
 | *QG-4* 

@@ -65,10 +65,10 @@ endif::arc42help[]
 Quality objectives constitute the system's defining decision-making criteria. Sealing and intellectual property protection take precedence over any functional trade-off.
 
 |===
-|ID|Quality Objective|Category|Description & Validation Metric
+|ID|Quality Objective|Category|Description and Validation Metric
 
 |QG-1
-|Data Isolation & IP Protection
+|Data Isolation and IP Protection
 |Security / Confidentiality
 |Zero intellectual property leakage. Processed data is never persisted by model providers nor reused for retraining. Mandatory encryption at rest and in transit via Customer Managed Keys (AWS KMS CMK) with annual rotation and strict segregation of duties.
 
@@ -78,17 +78,17 @@ Quality objectives constitute the system's defining decision-making criteria. Se
 |Zero traffic traverses the public internet. All network paths (ingestion, vectorization, inference) reside in private subnets without Internet Gateways (IGW) or NAT Gateways. Services are consumed exclusively via interface endpoints (AWS PrivateLink / VPC Endpoints).
 
 |QG-3
-|Safety & Hallucination Mitigation
+|Safety and Hallucination Mitigation
 |Reliability / Integrity
 |Neutralization of prompt injection and jailbreak attempts. Deterministic blocking of out-of-scope enterprise queries via Bedrock Guardrails, along with automated redaction and masking of PII / GDPR-sensitive entities.
 
 |QG-4
-|Operational Simplicity & Serverless Model
+|Operational Simplicity and Serverless Model
 |Maintainability / Operations
 |Zero server administration overhead. Exclusive adoption of fully managed, serverless building blocks (Amazon Bedrock, Amazon OpenSearch Serverless / Aurora PostgreSQL Serverless pgvector). Fully reproducible IaC deployment (Terraform) without persistent custom application hosts.
 
 |QG-5
-|Inference Performance & FinOps Governance
+|Inference Performance and FinOps Governance
 |Efficiency / Cost Optimization
 |Time to First Token (TTFT) < 1.2 s and overall P95 latency < 4.0 s on 20,000-token contexts. Granular tracking of input/output token consumption using AWS Cost Allocation Tags paired with budget alert thresholds.
 |===
@@ -154,15 +154,15 @@ endif::arc42help[]
 |`N/A`
 |Ensure alignment with IT urbanization standards and the AWS Well-Architected Framework (GenAI Lens). Formally evaluate and approve Architecture Decision Records (ADRs), specifically managed serverless building blocks and the vector database trade-off.
 
-|Engineering Units & R&D (Bureaux d'Études)
+|Engineering Units and RandD (Bureaux d'Études)
 |`N/A`
 |Reliable, highly accurate engineering assistant free of detrimental hallucinations, delivering verified citations from technical documentation (MRO, flight tests, specifications). Low latency (P95 < 4 s) and fast document indexing.
 
-|Platform & SecOps Team
+|Platform and SecOps Team
 |`N/A`
 |Zero OS administration or cluster maintenance overhead (serverless). Fully reproducible Infrastructure-as-Code deployment (Terraform), strict IAM role separation (least privilege), and real-time CloudWatch telemetry.
 
-|FinOps Lead & IT Financial Management
+|FinOps Lead and IT Financial Management
 |`N/A`
 |Predictability and control of Generative AI costs. Enforcement of granular cost allocation tags, departmental token consumption quotas, and optimized model routing (Haiku vs. Sonnet).
 

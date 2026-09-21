@@ -8,7 +8,7 @@ ifdef::arc42help[]
 ****
 The building block view breaks down the system into black boxes and white boxes, showing their internal structure and relationships.
 * Level 1: Whitebox of the overall system (Core subsystems).
-* Level 2: Whitebox of critical subsystems (Ingestion Pipeline & Inference Pipeline).
+* Level 2: Whitebox of critical subsystems (Ingestion Pipeline and Inference Pipeline).
 ****
 endif::arc42help[]
 
@@ -22,22 +22,22 @@ image::05_01_building_block_view.drawio.png[Building Block View]
 
 [cols="1,3", options="header"]
 |===
-|Building Block |Description & Responsibility
+|Building Block |Description and Responsibility
 
-|*1. Ingestion & Vectorization Pipeline*
+|*1. Ingestion and Vectorization Pipeline*
 |Asynchronously processes raw engineering documents from staging storage, executes text extraction, semantic chunking, and generates high-dimensional embeddings before indexing them into the vector store.
 
-|*2. Vector & Knowledge Store*
+|*2. Vector and Knowledge Store*
 |Maintains high-performance vector indices (Amazon OpenSearch Serverless) and master document binaries (S3), enforcing strict metadata boundaries and encryption at rest via KMS CMK.
 
-|*3. Query & RAG Inference Pipeline*
+|*3. Query and RAG Inference Pipeline*
 |Handles synchronous user requests, coordinates hybrid search queries against the vector store, constructs augmented prompt contexts, and invokes the foundation model (Mistral Large 3).
 
-|*4. Security & Governance Plane*
+|*4. Security and Governance Plane*
 |Enforces runtime content filtering (Bedrock Guardrails), cryptographic data protection (KMS CMK), and identity-based access control (ABAC) across all subsystems.
 |===
 
-=== 2. Level 2: Query & RAG Inference Pipeline (Whitebox)
+=== 2. Level 2: Query and RAG Inference Pipeline (Whitebox)
 
 The inference pipeline handles user queries in real-time. It enforces strict safety checks both before context retrieval and after model generation to prevent prompt injections and data leakage.
 
@@ -45,7 +45,7 @@ image::05_02_building_block_view.drawio.png[Building Block View]
 
 [cols="1,3", options="header"]
 |===
-|Component |Operational Logic & Security Controls
+|Component |Operational Logic and Security Controls
 
 |*Private API Gateway*
 |Terminates TLS 1.3 traffic arriving via the internal network and authenticates session tokens (IAM/SigV4). No public internet exposure.
@@ -66,7 +66,7 @@ image::05_02_building_block_view.drawio.png[Building Block View]
 |Scans the generated text to ensure it does not hallucinate out-of-domain knowledge or leak unverified claims before returning the payload to the user.
 |===
 
-=== 3. Level 2: Ingestion & Vectorization Pipeline (Whitebox)
+=== 3. Level 2: Ingestion and Vectorization Pipeline (Whitebox)
 
 The ingestion pipeline is entirely decoupled from user traffic. It operates as a batch or event-driven process, transforming unstructured technical documentation into structured semantic vectors.
 
@@ -74,12 +74,12 @@ image::05_03_building_block_view.drawio.png[Building Block View]
 
 [cols="1,3", options="header"]
 |===
-|Component |Operational Logic & Security Controls
+|Component |Operational Logic and Security Controls
 
 |*S3 Staging Storage*
 |Encrypted object storage holding raw engineering documents pushed from corporate PLM/EDMS systems. Accessed strictly via S3 Gateway Endpoints.
 
-|*Document Parser & Chunker*
+|*Document Parser and Chunker*
 |Extracts text, tables, and metadata. Divides content into optimized semantic chunks (e.g., overlapping windows of 512 tokens) to preserve technical context.
 
 |*Embedding Model*

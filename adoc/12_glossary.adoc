@@ -1,0 +1,29 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-glossary]]
+== Glossary
+
+This section defines the core technical and domain-specific terms used throughout this architecture document to ensure alignment among engineering, security, and business stakeholders.
+
+[cols="1,4", options="header"]
+|===
+| Term / Acronym | Definition
+
+| **ABAC** (Attribute-Based Access Control)
+| An authorization model that evaluates dynamic attributes (e.g., user department, document clearance level) rather than static roles to grant access.
+
+| **CMK** (Customer Managed Key)
+| The primary cryptographic key managed entirely by the enterprise's SecOps team within AWS KMS, used to encrypt local Data Encryption Keys (DEKs) via envelope encryption.
+
+| **PrivateLink** (VPC Interface Endpoint)
+| An AWS network construct that injects an Elastic Network Interface (ENI) into a private subnet, enabling traffic to AWS APIs (Bedrock, OpenSearch, KMS) exclusively over the private backbone without internet exposure.
+
+| **RAG** (Retrieval-Augmented Generation)
+| An architectural pattern that restricts Large Language Model (LLM) generation strictly to the context of retrieved proprietary documents, eliminating out-of-domain hallucinations.
+
+| **TTFT** (Time To First Token)
+| A primary latency metric measuring the exact time elapsed between a user submitting a query and the LLM returning the first generated text token.
+
+| **ZDR** (Zero Data Retention)
+| A strict compliance guarantee ensuring that model providers do not log, persist, or use enterprise prompts and embeddings to retrain foundation models.
+|===

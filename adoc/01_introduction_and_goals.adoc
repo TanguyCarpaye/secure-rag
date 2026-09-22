@@ -3,170 +3,68 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-introduction-and-goals]]
 == Introduction and Goals
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Describes the relevant requirements and the driving forces that software architects and development team must consider. 
-These include
+=== Requirements and Problem Statement
 
-* underlying business goals, 
-* essential features, 
-* essential functional requirements, 
-* quality goals for the architecture and
-* relevant stakeholders and their expectations
-****
-endif::arc42help[]
+In high-tech industries (aeronautics, defense), engineering departments handle massive volumes of critical documentation. While leveraging foundation models via a Retrieval-Augmented Generation (RAG) architecture drives productivity, enterprise Information Security Policies (PSSI) strictly prohibit public internet data transit and third-party model retraining. 
 
-=== Requirements Overview
-
-In high-tech industries (aeronautics, aerospace, defense in the Occitanie region), design offices, engineering departments, and support functions handle massive volumes of critical documentation: technical specifications for civil and military programs, certification files, maintenance manuals, flight test reports, and lessons-learned databases.
-
-The use of foundation models (FM) via a retrieval-augmented generation (RAG) architecture is a major driver of productivity. However, the information security policy (PSSI) of industrial clients strictly prohibits the transmission of confidential data over the public Internet and any risk of models being retrained by third parties.
-
-This document outlines the design of a secure and isolated enterprise RAG platform.
-
-==== Problem Summary and Statement of Intent
-The architectural challenge lies not in software application development, but in system architecture, infrastructure isolation, and access governance. The system provides a managed cognitive assistance service without any data flows leaving the private corporate network.
+The architectural challenge is entirely focused on infrastructure isolation and access governance. This Secure Enterprise RAG Platform delivers managed cognitive assistance with zero data flows leaving the corporate network.
 
 ==== Target Functional Capabilities
-. Asynchronous ingestion and vectorization : Extraction, chunking, and generation of semantic embeddings for office and technical documents (PDF, Word, Markdown, vectorized diagrams) stored in highly secure environments.
-. Hybrid similarity search : Low-latency indexing and contextual retrieval of relevant document passages via a managed vector database.
-. Context-aware response generation: Inference using leading Large Language Models such as Mistral Large 3 via Amazon Bedrock powered exclusively by the extracted document context.
-. Contextual filtering and automated guardrails: Proactive detection and blocking of prompt injections and jailbreaks, automatic masking of personally identifiable information (PII), and prevention of output outside the approved document domain via Bedrock Guardrails.
-
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-Short description of the functional requirements, driving forces, extract (or abstract)
-of requirements. Link to (hopefully existing) requirements documents
-(with version number and information where to find it).
-
-.Motivation
-From the point of view of the end users a system is created or modified to
-improve support of a business activity and/or improve the quality.
-
-.Form
-Short textual description, probably in tabular use-case format.
-If requirements documents exist this overview should refer to these documents.
-
-Keep these excerpts as short as possible. Balance readability of this document with potential redundancy w.r.t to requirements documents.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-1/[Introduction and Goals] in the arc42 documentation.
-
-****
-endif::arc42help[]
+* **Async Ingestion:** Semantic vectorization of highly secure technical documents (PDF, Word, Markdown).
+* **Hybrid Search:** Low-latency contextual retrieval via a managed vector database.
+* **Grounded Inference:** Context-constrained generation using Mistral Large 3 via Amazon Bedrock.
+* **Active Guardrails:** Synchronous PII masking and prompt injection blocking.
 
 === Quality Goals
-Quality objectives constitute the system's defining decision-making criteria. Sealing and intellectual property protection take precedence over any functional trade-off.
 
+Sealing the network perimeter and protecting intellectual property take absolute precedence over functional flexibility.
+
+[cols="1,2,4", options="header"]
 |===
-|ID|Quality Objective|Category|Description and Validation Metric
+|ID |Quality Objective |Description and Validation Metric
 
-|QG-1
-|Data Isolation and IP Protection
-|Security / Confidentiality
-|Zero intellectual property leakage. Processed data is never persisted by model providers nor reused for retraining. Mandatory encryption at rest and in transit via Customer Managed Keys (AWS KMS CMK) with annual rotation and strict segregation of duties.
+|*QG-1* 
+|IP Protection and Data Isolation
+|Zero intellectual property leakage. Zero data retention by model providers. Mandatory encryption via Customer Managed Keys (AWS KMS CMK) with strict segregation of duties.
 
-|QG-2
+|*QG-2* 
 |Total Network Isolation
-|Security / Network
-|Zero traffic traverses the public internet. All network paths (ingestion, vectorization, inference) reside in private subnets without Internet Gateways (IGW) or NAT Gateways. Services are consumed exclusively via interface endpoints (AWS PrivateLink / VPC Endpoints).
+|Zero public internet transit. All workflows reside in private subnets without IGW/NAT Gateways. Exclusive use of AWS PrivateLink.
 
-|QG-3
-|Safety and Hallucination Mitigation
-|Reliability / Integrity
-|Neutralization of prompt injection and jailbreak attempts. Deterministic blocking of out-of-scope enterprise queries via Bedrock Guardrails, along with automated redaction and masking of PII / GDPR-sensitive entities.
+|*QG-3* 
+|AI Safety and Integrity
+|Deterministic blocking of prompt injections and out-of-scope queries. Automated redaction of PII via Bedrock Guardrails.
 
-|QG-4
-|Operational Simplicity and Serverless Model
-|Maintainability / Operations
-|Zero server administration overhead. Exclusive adoption of fully managed, serverless building blocks (Amazon Bedrock, Amazon OpenSearch Serverless / Aurora PostgreSQL Serverless pgvector). Fully reproducible IaC deployment (Terraform) without persistent custom application hosts.
+|*QG-4* 
+|Serverless Operations
+|Zero server administration. Serverless infrastructure (Bedrock, OpenSearch Serverless) deployed via Terraform.
 
-|QG-5
-|Inference Performance and FinOps Governance
-|Efficiency / Cost Optimization
-|Time to First Token (TTFT) < 1.2 s and overall P95 latency < 4.0 s on 20,000-token contexts. Granular tracking of input/output token consumption using AWS Cost Allocation Tags paired with budget alert thresholds.
+|*QG-5* 
+|FinOps and Performance
+|Time to First Token (TTFT) < 1.2s; P95 latency < 4.0s. Granular tracking of token consumption via AWS Cost Allocation Tags.
 |===
-
-
-
-
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-The top three (max five) quality goals for the architecture whose fulfillment is of highest importance to the major stakeholders. 
-We really mean quality goals for the architecture. Don't confuse them with project goals.
-They are not necessarily identical.
-
-Consider this overview of potential topics (based upon the ISO 25010 standard):
-
-image::01_2_iso-25010-topics-EN-2023.drawio.png["Categories of Quality Requirements"]
-
-.Motivation
-You should know the quality goals of your most important stakeholders, since they will influence fundamental architectural decisions. 
-Make sure to be very concrete about these qualities, avoid buzzwords.
-If you as an architect do not know how the quality of your work will be judged...
-
-.Form
-A table with quality goals and concrete scenarios, ordered by priorities
-****
-endif::arc42help[]
 
 === Stakeholders
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-Explicit overview of stakeholders of the system, i.e. all person, roles or organizations that
-
-* should know the architecture
-* have to be convinced of the architecture
-* have to work with the architecture or with code
-* need the documentation of the architecture for their work
-* have to come up with decisions about the system or its development
-
-.Motivation
-You should know all parties involved in development of the system or affected by the system.
-Otherwise, you may get nasty surprises later in the development process.
-These stakeholders determine the extent and the level of detail of your work and its results.
-
-.Form
-Table with role names, person names, and their expectations with respect to the architecture and its documentation.
-****
-endif::arc42help[]
-
-[cols="1,1,3", options="header"]
+[cols="1,3", options="header"]
 |===
-|Role/Name|Contact|Expectations
+|Role / Entity |Primary Expectations
 
-|Chief Information Security Officer (CISO / RSSI)
-|`N/A`
-|Verify compliance with enterprise PSSI and defense/sovereignty requirements. Guarantee zero intellectual property exfiltration. Formally review and approve private network topology (AWS PrivateLink, no IGW/NAT), Customer Managed Keys (AWS KMS CMK), and CloudTrail auditability.
+|*Chief Information Security Officer (CISO)*
+|Verify PSSI/ISO 27001 compliance. Approve the air-gapped network topology, KMS CMK policies, and zero IP exfiltration guarantees.
 
-|Architecture Review Board (ARB)
-|`N/A`
-|Ensure alignment with IT urbanization standards and the AWS Well-Architected Framework (GenAI Lens). Formally evaluate and approve Architecture Decision Records (ADRs), specifically managed serverless building blocks and the vector database trade-off.
+|*Architecture Review Board (ARB)*
+|Validate alignment with enterprise urbanization standards, the AWS Well-Architected Framework, and serverless ADRs.
 
-|Engineering Units and RandD (Bureaux d'Études)
-|`N/A`
-|Reliable, highly accurate engineering assistant free of detrimental hallucinations, delivering verified citations from technical documentation (MRO, flight tests, specifications). Low latency (P95 < 4 s) and fast document indexing.
+|*Engineering Units (RandD / Design)*
+|Accurate, hallucination-free cognitive assistance with verified, fast citations from technical baselines.
 
-|Platform and SecOps Team
-|`N/A`
-|Zero OS administration or cluster maintenance overhead (serverless). Fully reproducible Infrastructure-as-Code deployment (Terraform), strict IAM role separation (least privilege), and real-time CloudWatch telemetry.
+|*Platform and SecOps Team*
+|Zero-maintenance infrastructure (serverless), fully reproducible IaC deployments, and strict IAM least-privilege enforcement.
 
-|FinOps Lead and IT Financial Management
-|`N/A`
-|Predictability and control of Generative AI costs. Enforcement of granular cost allocation tags, departmental token consumption quotas, and optimized model routing (Haiku vs. Sonnet).
+|*FinOps Lead*
+|Cost predictability enforced through strict token quotas, granular resource tagging, and optimized model routing.
 
-|Data Protection Officer (DPO / Legal)
-|`N/A`
-|Ensure GDPR and EU AI Act compliance, mandatory EU data residency (AWS Paris `eu-west-3`), and auditability of document access. Validate automated PII masking via Bedrock Guardrails.
+|*Data Protection Officer (DPO / Legal)*
+|Ensure GDPR/EU AI Act compliance, mandatory EU data residency (eu-west-3), and auditability of document access.
 |===

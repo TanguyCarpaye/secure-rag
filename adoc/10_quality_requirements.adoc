@@ -1,0 +1,51 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-quality-requirements]]
+== Quality Requirements
+
+This section operationalizes the primary quality goalsinto verifiable scenarios. For this air-gapped RAG platform, network security and data sovereignty strictly overrule functional flexibility.
+
+=== 10.1 Quality Tree
+
+The quality tree maps the overarching ISO 25010 characteristics to the specific architectural constraints of the enterprise platform.
+
+* **Security and Sovereignty**
+  ** Confidentiality: Cryptographic isolation of vector data and document binaries (KMS CMK).
+  ** Network Isolation: Zero public internet transit (VPC Endpoints / PrivateLink).
+* **Reliability and AI Safety**
+  ** Integrity: Deterministic filtering of prompt injections and PII redaction via infrastructure guardrails.
+  ** Grounding: Restricting Mistral Large 3 outputs to approved enterprise context.
+* **Performance and Efficiency**
+  ** Latency: Strict bounds on Time To First Token (TTFT) for synchronous engineering queries.
+  ** Cost Control (FinOps): Tag-based tracking of token consumption by business unit.
+* **Maintainability**
+  ** Operational Simplicity: Complete reliance on serverless building blocks to eliminate host patching.
+
+=== 10.2 Quality Scenarios
+
+The following scenarios describe how the system reacts to specific operational triggers, providing concrete metrics for architectural validation.
+
+[cols="1,3,3,2", options="header"]
+|===
+| ID | Stimulus and Context | Expected System Response | Validation Metric
+
+| **QS-1**
+| A compromised internal workload or malicious actor attempts to exfiltrate proprietary document chunks to an unauthorized external IP.
+| The network topology natively drops the traffic. The platform lacks Internet/NAT Gateways, and outbound traffic from the compute layer is strictly confined to AWS PrivateLink endpoints.
+| Outbound public packets dropped. 0 IGW provisioned.
+
+| **QS-2**
+| An engineering user submits a query containing a jailbreak attempt (e.g., "Ignore previous instructions") and a sensitive physical address.
+| Bedrock Guardrails synchronously intercepts the payload at the API boundary before vector retrieval. The PII is masked, and the injection is neutralized and logged to CloudTrail.
+| ≥ 99.5% interception rate. PII masking executed before LLM processing.
+
+| **QS-3**
+| The infrastructure deployment pipeline executes an automated infrastructure update via Terraform.
+| The pipeline provisions the serverless components but is denied access to read or alter the KMS Customer Managed Keys (CMK). Only the SecOps IAM role can schedule key deletion or alter key policies.
+| Strict segregation of duties confirmed via IAM Access Analyzer.
+
+| **QS-4**
+| 500 concurrent users submit complex technical queries to the RAG pipeline during peak engineering hours.
+| OpenSearch Serverless scales its compute units (OCUs) automatically. Amazon Bedrock routes the prompt to Mistral Large 3. The payload is processed entirely on the AWS backbone.
+| Time to First Token (TTFT) < 1.2s. Overall P95 latency < 4.0s for 20,000-token contexts.
+|===

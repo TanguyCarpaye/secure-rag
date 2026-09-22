@@ -3,83 +3,62 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-architecture-constraints]]
 == Architecture Constraints
 
-This section outlines the non-negotiable technical, organizational, and regulatory boundaries governing the design, implementation, and operation of the Secure Enterprise RAG Platform. Architectural decisions must strictly adhere to these constraints.
+This section outlines the non-negotiable boundaries governing the Secure Enterprise RAG Platform. Architectural decisions must strictly adhere to these rules.
 
 === Technical Constraints
 
-The platform operates under zero-trust and air-gapped network principles, eliminating public exposure and minimizing infrastructure management overhead.
+The platform enforces a zero-trust, air-gapped network perimeter.
 
-[cols="1,2,3", options="header"]
+[cols="2,5", options="header"]
 |===
-|ID |Constraint |Rationale and Operational Impact
+| ID & Constraint | Specification & Rationale
 
-|TC-1
-|Cloud Provider and Fully Managed Serverless Footprint
-|AWS Exclusive and Serverless. The architecture must exclusively leverage AWS native managed services (Amazon Bedrock, Amazon OpenSearch Serverless or Aurora PostgreSQL Serverless pgvector, AWS Lambda, S3). Provisioning and maintaining self-hosted virtual machines (Amazon EC2) or Kubernetes nodes (Amazon EKS) is strictly forbidden to eliminate OS patching, host maintenance, and operational toil.
+| *TC-1: Serverless*
+| Exclusive use of AWS managed services (Bedrock, OpenSearch Serverless, S3). Provisioning VMs (EC2) or Kubernetes nodes (EKS) is forbidden to eliminate OS maintenance.
 
-|TC-2
-|Zero Public Internet Transit (Air-Gapped Network)
-|No Internet Gateway (IGW) or NAT Gateway. All data ingestion, vector indexing, retrieval, and inference traffic must reside entirely within private isolated subnets. Connectivity to AWS services must route exclusively through AWS PrivateLink (VPC Interface Endpoints) and S3 Gateway Endpoints. Public IP assignment is prohibited on any interface.
+| *TC-2: Air-Gapped Network*
+| Zero public internet transit. No Internet/NAT Gateways. All traffic routes internally via AWS PrivateLink (VPC Endpoints) and S3 Gateway Endpoints.
 
-|TC-3
-|Cryptographic Sovereignty and Customer Managed Keys (CMK)
-|Mandatory AWS KMS CMK. All data at rest and data in transit must be encrypted using dedicated Customer Managed Keys. Default AWS-managed keys are prohibited by enterprise CISO policy. Key policies must strictly enforce annual rotation.
+| *TC-3: Cryptographic Sovereignty*
+| Mandatory AWS KMS Customer Managed Keys (CMK) for data at rest and in transit. Default AWS keys are prohibited. Strict annual key rotation.
 
-|TC-4
-|Zero Custom Application Code ("Infrastructure-First")
-|No bespoke application backend. The design eliminates custom Python/FastAPI middleware runtimes. The platform relies exclusively on native orchestration capabilities to minimize attack surface and application lifecycle maintenance.
+| *TC-4: Infrastructure-First*
+| Zero bespoke application code (e.g., Python middleware). Reliance on native orchestration to minimize attack surface.
 
-|TC-5
-|Strict Geographic Data Residency
-|EU Territory Exclusivity. Primary infrastructure, vector storage, and model execution must be strictly provisioned within the AWS European boundaries (Primary: `eu-west-3` Paris).
+| *TC-5: EU Data Residency*
+| Primary infrastructure, vector storage, and inference strictly provisioned in `eu-west-3` (Paris).
 |===
 
 === Organizational and Regulatory Constraints
 
-These constraints mandate strict document-level access controls during retrieval, sovereign hosting isolated from extraterritorial jurisdiction, and segregated processing pipelines aligned with export-control and dual-use (civil/defense) compliance frameworks.
+These boundaries guarantee data sovereignty and strict access governance.
 
-[cols="1,2,3", options="header"]
+[cols="2,5", options="header"]
 |===
-|ID |Constraint |Rationale and Operational Impact
+| ID & Constraint | Specification & Rationale
 
-|OC-1
-|Sovereignty, Data Residency and Model Training Prohibition
-|Zero Data Retention and Cloud Act Mitigation. Technical controls and contractual terms with model and hosting providers must guarantee zero data retention (ZDR) beyond the ephemeral inference window. Prompts, embeddings, and retrieved context must never be logged on unmanaged infrastructure or utilized for base model training. For sensitive engineering payloads (IP/Trade Secrets), inference must run on-premises, within SecNumCloud-certified enclaves, or via dedicated KMS with customer-held keys preventing extraterritorial administrative access.
+| *OC-1: Zero Data Retention (ZDR)*
+| Strict technical and contractual prohibition of model retraining on corporate data. Ephemeral inference only.
 
-|OC-2
-|Compliance Framework (EU AI Act, Export Control and Defense)
-|Multi-Tier Regulatory Governance. The system must enforce strict boundaries according to data sensitivity.
+| *OC-2: Regulatory Compliance*
+| Multi-tier governance aligned with the EU AI Act, Export Control, and defense/civil dual-use frameworks.
 
-|OC-3
-|End-to-End IAM and Metadata-Driven Retrieval (ABAC)
-|Dual-Control IAM and Document-Level Security. Least privilege is enforced at both infrastructure and data layers:
- Infrastructure Separation: Strict division between Cloud/Infra Admins, KMS Key Custodians, and Service Workloads.
- Vector-Level ABAC: Vector database searches must apply pre-retrieval security filters matching the querying user's authorization tags.
+| *OC-3: ABAC & IAM Segregation*
+| Dual-control IAM: Strict separation between Cloud Admins and KMS Key Custodians. Document access is enforced via pre-retrieval vector-level Attribute-Based Access Control (ABAC).
 
-|OC-4
-|Configuration Management and Auditability Gateways
-|Document Lifecycle and Versioning: Retrieval pipelines must enforce metadata filtering on document revisions, valid engineering effectivities, and obsolescence status.
-Architecture Sign-Off: Formal alignment with the AWS Well-Architected Framework.
+| *OC-4: Auditability Gateways*
+| Retrieval pipelines filter based on valid engineering effectivities and document revisions. Formal alignment with the AWS Well-Architected Framework.
 |===
 
 === Conventions and Standards
 
-To ensure reusability, maintainability, and alignment with corporate engineering standards, the following conventions are enforced across all deliverables.
-
-[cols="1,2,3", options="header"]
+[cols="2,5", options="header"]
 |===
-|ID |Convention |Specification and Tooling
+| ID & Convention | Specification & Tooling
 
-|CON-1
-|Infrastructure as Code (IaC) and DevSecOps Validation
-|All infrastructure components must be declared using HashiCorp Terraform (version >= 1.8). Every module must pass static security analysis, linting, and formatting standards before deployment through automated CI/CD validation pipelines.
+| *CON-1: DevSecOps & IaC*
+|  HashiCorp Terraform (>= 1.8). Automated CI/CD pipelines with mandatory static security analysis and linting.
 
-|CON-2
-|FinOps Tagging and Cost Allocation Standard
-|Every provisioned resource must include mandatory AWS Cost Allocation Tags:
- `Project` = `XXX`,
- `Environment` = `xxx`,
- `DataClassification` = `xxx`,
- `CostCenter` = `xxx`.
-Un-tagged resources must be automatically flagged or quarantined.
+| *CON-2: FinOps Tagging*
+| Mandatory AWS Cost Allocation Tags (`Project`, `Environment`, `DataClassification`, `CostCenter`). Untagged resources are automatically quarantined.
 |===

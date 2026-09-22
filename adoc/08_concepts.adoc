@@ -27,15 +27,15 @@ image::08_02_concepts.drawio.png[Runtime View]
 * **Envelope Process:** When writing vector chunks, the system requests a Data Encryption Key (DEK) from KMS. KMS returns the DEK in both plaintext and encrypted forms. The system encrypts the vector locally using the plaintext DEK, discards the plaintext DEK, and persists the encrypted payload alongside the encrypted DEK. 
 * **Zero Trust:** Even if physical storage volumes underlying OpenSearch or S3 are accessed, the data remains cryptographically unreadable without the active KMS IAM role.
 
-=== 3. AI Safety & Content Filtering (Bedrock Guardrails)
+=== 3. AI Safety and Content Filtering (Bedrock Guardrails)
 
-Addressing QG-3 (Safety & Hallucination Mitigation), AI safety is managed via an infrastructure-level gateway rather than custom prompt engineering.
+Addressing QG-3 (Safety and Hallucination Mitigation), AI safety is managed via an infrastructure-level gateway rather than custom prompt engineering.
 
 * **Synchronous Interception:** Amazon Bedrock Guardrails intercept both inbound user prompts and outbound LLM completions.
 * **PII Masking:** Personally Identifiable Information (e.g., names, phone numbers, email addresses) is detected using predefined patterns and masked (e.g., [NAME]) before vector search or inference, keeping query telemetry clean.
 * **Injection Blocking:** Filters detect and drop prompt injection attempts (e.g., "Ignore all previous instructions") before they reach the Foundation Model.
 
-=== 4. Total Observability & Auditability
+=== 4. Total Observability and Auditability
 
 To comply with OC-4 (Auditability Gateways), logging and monitoring follow strict network routing policies.
 

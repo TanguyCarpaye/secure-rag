@@ -1,0 +1,33 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-risks-and-technical-debt]]
+== Risks and Technical Debt
+
+This section catalogs the systemic risks and accepted technical debt inherent to the Secure Enterprise RAG Platform. Given the strict mandate for infrastructure isolation and zero custom application code, the primary risks shift from software vulnerabilities to cloud vendor dependencies, architectural latency trade-offs, and operational cost governance.
+
+=== 11.1 Risk Log and Mitigation
+
+[cols="1,3,2", options="header"]
+|===
+| Risk / Debt Item | Description and Operational Impact | Mitigation Strategy
+
+| **R-01: Runaway Inference Costs (FinOps Risk)**
+| Generative AI token consumption is highly variable. Massive document context windows processed by Mistral Large 3 can lead to unforeseen inference costs if query volume spikes.
+| Enforce granular AWS Cost Allocation Tags (CostCenter) on the Bedrock API. Implement hard billing alerts in AWS Budgets to trigger automated quotas per engineering department.
+
+| **R-02: Regional Model Availability (Vendor Lock-in)**
+| The architecture relies exclusively on Amazon Bedrock. The platform's availability is strictly tied to AWS provisioning Mistral Large 3 within the targeted European boundary (eu-west-3).
+| Maintain cross-region fallback configurations in Terraform (eu-central-1) strictly within the European Economic Area (EEA) to respect data residency constraints.
+
+| **R-03: Model Drift and Deprecation**
+| Foundation models undergo silent updates or deprecation by the provider, potentially altering the accuracy of engineering retrieval responses (Model Drift).
+| Explicitly pin foundational model versions in the Infrastructure as Code (IaC). Establish automated evaluations against a static benchmark dataset before performing version upgrades.
+
+| **TD-01: Baseline Vector Database Costs**
+| *Technical Debt:* Amazon OpenSearch Serverless incurs a continuous baseline cost (minimum OpenSearch Compute Units - OCUs) to maintain index availability, even during idle periods.
+| Accepted as a necessary trade-off to completely eliminate cluster administration. FinOps teams must baseline this minimum OCU burn rate into the fixed platform operating budget.
+
+| **TD-02: In-Flight Safety Latency**
+| *Technical Debt:* Synchronous interception of inputs and outputs by Amazon Bedrock Guardrails adds approximately 150-200ms to the Time To First Token (TTFT).
+| Accepted as a non-negotiable security requirement. The latency penalty is offset by the total elimination of custom, inefficient Python middleware for PII masking and prompt injection filtering.
+|===

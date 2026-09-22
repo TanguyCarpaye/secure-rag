@@ -1,0 +1,95 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-architecture-decisions]]
+== Architecture Decisions
+
+This section documents critical architectural decisions using the Markdown Architectural Decision Record (MADR) format. These records justify the trade-offs made to enforce network isolation, cryptographic sovereignty, and infrastructure orchestration constraints.
+
+=== Summary of Decisions
+
+[cols="1,4,2", options="header"]
+|===
+| ID | Decision Title | Status
+| ADR-001 | Foundation Model Selection and Hosting (Mistral Large 3) | Accepted
+| ADR-002 | Vector Search Engine Selection | Accepted
+| ADR-003 | AI Safety and Content Filtering Enforcement | Accepted
+|===
+
+---
+
+=== ADR-001: Foundation Model Selection and Hosting (Mistral Large 3)
+
+* **Status:** Accepted
+* **Date:** 2026-09-22
+
+==== Context and Problem Statement
+The RAG pipeline requires a Large Language Model (LLM) for context-augmented reasoning. The enterprise security policy prohibits public internet transit (TC-2) and forbids third-party model retraining on corporate data (OC-1). The infrastructure team requires a zero-maintenance operational footprint (TC-1).
+
+==== Evaluated Options
+1. **Self-Hosted Models on AWS EC2/EKS:** Provisioning GPU instances in private subnets and serving open-weights models via custom containers.
+2. **Public SaaS APIs:** Consuming models directly from external providers over the internet.
+3. **Amazon Bedrock (Mistral Large 3):** Consuming the Mistral Large 3 model as a fully managed serverless API within the AWS boundary.
+
+==== Decision
+**Option 3 (Mistral Large 3 via Amazon Bedrock) is selected.**
+
+==== Rationale
+* Option 2 violates the zero-public-internet constraint (TC-2).
+* Option 1 complies with data isolation but introduces high operational overhead (CUDA drivers, OS patching, cluster autoscaling) and idle GPU costs, violating the serverless constraint (TC-1).
+* Option 3 fulfills all criteria. Mistral Large 3 provides the necessary reasoning capabilities for complex engineering queries. Bedrock routing occurs exclusively via VPC Interface Endpoints (PrivateLink). Enterprise terms guarantee Zero Data Retention (ZDR) and prohibit base model training.
+
+==== Consequences
+* **Positive:** No GPU capacity planning. Pay-as-you-go token pricing. Traffic remains on the AWS private backbone.
+* **Negative/Risk:** Vendor lock-in to the AWS Bedrock ecosystem and dependency on regional availability for specific model versions.
+
+---
+
+=== ADR-002: Vector Search Engine Selection
+
+* **Status:** Accepted
+* **Date:** 2026-09-22
+
+==== Context and Problem Statement
+The system requires a database to store vector embeddings and document metadata. The engine must support hybrid search (k-NN + lexical) and dynamic metadata filtering to enforce Attribute-Based Access Control (ABAC) prior to retrieval (OC-3).
+
+==== Evaluated Options
+1. **SaaS Vector Database (e.g., Pinecone):** Managed cloud-native vector databases.
+2. **Amazon Aurora PostgreSQL (pgvector):** Serverless relational database utilizing the pgvector extension.
+3. **Amazon OpenSearch Serverless:** Fully managed vector database optimized for massive-scale semantic search.
+
+==== Decision
+**Option 3 (Amazon OpenSearch Serverless) is selected.**
+
+==== Rationale
+* Option 1 is rejected as it requires outbound internet access or complex VPC peering, violating TC-2.
+* Option 2 is viable but introduces relational database overhead (transaction logs, vacuuming) for a workload that is strictly append-only and read-heavy.
+* Option 3 provides native k-NN indexing (HNSW) and lexical search. It integrates at the infrastructure level with AWS IAM for data access policies and AWS KMS for envelope encryption.
+
+==== Consequences
+* **Positive:** Eliminates cluster management. Native integration with the AWS security perimeter (PrivateLink, IAM).
+* **Negative/Risk:** OpenSearch Serverless incurs a continuous baseline cost (minimum OpenSearch Compute Units - OCUs) even during idle periods, requiring FinOps monitoring.
+
+---
+
+=== ADR-003: AI Safety and Content Filtering Enforcement
+
+* **Status:** Accepted
+* **Date:** 2026-09-22
+
+==== Context and Problem Statement
+The platform must proactively block prompt injection attempts and automatically mask Personally Identifiable Information (PII) to comply with GDPR before the data reaches the LLM or the vector database.
+
+==== Evaluated Options
+1. **Custom Middleware (Python/LangChain):** Developing and maintaining application logic with regex and secondary classifier models to sanitize inputs.
+2. **Amazon Bedrock Guardrails:** Utilizing native infrastructure-level policies to intercept traffic synchronously at the API boundary.
+
+==== Decision
+**Option 2 (Amazon Bedrock Guardrails) is selected.**
+
+==== Rationale
+* Option 1 violates the "Infrastructure-First" constraint (TC-4). Maintaining custom sanitation code introduces technical debt, latency overhead, and potential security liabilities.
+* Option 2 shifts AI safety to the infrastructure layer. Guardrails execute deterministically, blocking jailbreaks and masking PII without requiring custom compute workloads or code maintenance.
+
+==== Consequences
+* **Positive:** Reduces application attack surface. Standardizes compliance across all API calls.
+* **Negative/Risk:** Adds synchronous latency to the Time To First Token (TTFT) due to the in-flight safety evaluation.

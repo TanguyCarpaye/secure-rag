@@ -1,0 +1,26 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-executive-summary]]
+== Executive Summary
+
+The Secure Enterprise RAG Platform is an air-gapped cognitive retrieval system designed specifically for the strict regulatory and intellectual property constraints of the Occitanie aerospace and defense sector. By shifting the technical complexity from custom application development to native AWS infrastructure orchestration, the platform delivers high-performance semantic search and generative AI capabilities without exposing enterprise data to the public internet.
+
+=== Architectural Blueprint
+
+The platform architecture completely eliminates custom compute management and persistent network exposure by relying exclusively on fully managed, serverless building blocks communicating over a private AWS backbone.
+
+image::03_2_technical_context.drawio.png[Technical Context]
+
+=== Core Design Principles
+
+1. **Air-Gapped Execution:** Zero Internet Gateways (IGW). All traffic routes through AWS PrivateLink Interface Endpoints and S3 Gateway Endpoints.
+2. **Cryptographic Sovereignty:** Mandatory use of AWS Key Management Service (KMS) Customer Managed Keys (CMK) for envelope encryption at rest and in transit. 
+3. **Infrastructure-First AI Safety:** Amazon Bedrock Guardrails synchronously intercept prompt injections and mask Personally Identifiable Information (PII) before any LLM execution or database retrieval occurs. 
+4. **Attribute-Based Access Control (ABAC):** Identity metadata injected from the Enterprise IdP ensures pre-retrieval filtering at the vector database level, mathematically preventing unauthorized data leakage via prompt manipulation.
+
+=== Key Technology Choices
+
+* **Cognitive Reasoning Engine:** Mistral Large 3 (via Amazon Bedrock).
+* **Semantic Embedding Engine:** Amazon Titan (via Amazon Bedrock).
+* **Knowledge Store:** Amazon OpenSearch Serverless.
+* **IaC & Automation:** HashiCorp Terraform.
